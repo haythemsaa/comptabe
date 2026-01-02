@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Module;
 use App\Models\ModuleRequest;
+use App\Models\User;
+use App\Notifications\ModuleRequestSubmittedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class TenantModuleController extends Controller
 {
@@ -49,13 +52,17 @@ class TenantModuleController extends Controller
             return redirect()->back()->with('error', 'Demande déjà en attente');
         }
 
-        ModuleRequest::create([
+        $moduleRequest = ModuleRequest::create([
             'company_id' => $company->id,
             'module_id' => $module->id,
             'message' => $request->input('message'),
             'requested_by' => Auth::id(),
             'status' => 'pending',
         ]);
+
+        // Notify all superadmins
+        $superadmins = User::where('is_superadmin', true)->get();
+        Notification::send($superadmins, new ModuleRequestSubmittedNotification($moduleRequest));
 
         return redirect()->back()->with('success', 'Demande envoyée !');
     }

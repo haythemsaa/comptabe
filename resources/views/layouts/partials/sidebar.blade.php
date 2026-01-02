@@ -299,6 +299,43 @@
                 @endif
             </a>
         </div>
+
+        <!-- Modules Section -->
+        <div class="pt-4">
+            <div class="px-4 mb-2 text-xs font-semibold text-secondary-400 uppercase tracking-wider">Modules</div>
+
+            <a href="{{ route('modules.marketplace') }}" class="nav-link {{ request()->routeIs('modules.marketplace') ? 'nav-link-active' : '' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <span>Marketplace</span>
+                @php
+                    $availableModulesCount = \App\Models\Module::active()
+                        ->whereNotIn('id', optional($currentTenant)->modules()->pluck('modules.id')->toArray() ?? [])
+                        ->count();
+                @endphp
+                @if($availableModulesCount > 0)
+                    <span class="ml-auto badge badge-primary">{{ $availableModulesCount }}</span>
+                @endif
+            </a>
+
+            <a href="{{ route('modules.my-modules') }}" class="nav-link {{ request()->routeIs('modules.my-modules') ? 'nav-link-active' : '' }}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                </svg>
+                <span>Mes Modules</span>
+                @php
+                    $enabledModulesCount = optional($currentTenant)->enabledModules()->count() ?? 0;
+                    $pendingRequests = optional($currentTenant)->moduleRequests()->where('status', 'pending')->count() ?? 0;
+                @endphp
+                @if($enabledModulesCount > 0)
+                    <span class="ml-auto badge badge-success">{{ $enabledModulesCount }}</span>
+                @endif
+                @if($pendingRequests > 0)
+                    <span class="ml-1 badge badge-warning">{{ $pendingRequests }}</span>
+                @endif
+            </a>
+        </div>
     </nav>
 
     <!-- Footer -->

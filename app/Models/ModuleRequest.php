@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\BelongsToTenant;
+use App\Notifications\ModuleRequestApprovedNotification;
+use App\Notifications\ModuleRequestRejectedNotification;
 
 class ModuleRequest extends Model
 {
@@ -15,6 +17,7 @@ class ModuleRequest extends Model
         'module_id',
         'status',
         'message',
+        'admin_message',
         'admin_response',
         'requested_by',
         'reviewed_by',
@@ -24,6 +27,11 @@ class ModuleRequest extends Model
     protected $casts = [
         'reviewed_at' => 'datetime',
     ];
+
+    public function getAdminMessageAttribute()
+    {
+        return $this->admin_response;
+    }
 
     public function company(): BelongsTo
     {
@@ -65,6 +73,9 @@ class ModuleRequest extends Model
                 'trial_ends_at' => now()->addDays($trialDays),
             ]
         ]);
+
+        // Notify the requester
+        $this->requestedBy->notify(new ModuleRequestApprovedNotification($this));
     }
 
     public function reject(User $admin, string $reason): void
@@ -75,10 +86,23 @@ class ModuleRequest extends Model
             'reviewed_at' => now(),
             'admin_response' => $reason,
         ]);
+
+        // Notify the requester
+        $this->requestedBy->notify(new ModuleRequestRejectedNotification($this));
     }
 
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
     }
 }
