@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="test-token">
+    <title>Test Assets ComptaBE</title>
+
+    <!-- Load built CSS -->
+    <link rel="stylesheet" href="/build/assets/app-CnFDywHp.css">
+    <link rel="stylesheet" href="/build/assets/app-CksuuEqD.css">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Test Assets ComptaBE</h1>
+
+        <div class="space-y-4">
+            <div id="axios-test" class="p-4 bg-gray-100 rounded">
+                <h2 class="font-bold mb-2">Test window.axios:</h2>
+                <div id="axios-result">Chargement...</div>
+            </div>
+
+            <div id="createchart-test" class="p-4 bg-gray-100 rounded">
+                <h2 class="font-bold mb-2">Test window.createChart:</h2>
+                <div id="createchart-result">Chargement...</div>
+            </div>
+
+            <div id="alpine-test" class="p-4 bg-gray-100 rounded">
+                <h2 class="font-bold mb-2">Test Alpine.js:</h2>
+                <div id="alpine-result">Chargement...</div>
+            </div>
+
+            <div id="inertia-test" class="p-4 bg-gray-100 rounded">
+                <h2 class="font-bold mb-2">Test Inertia (ne devrait PAS exister):</h2>
+                <div id="inertia-result">Chargement...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load built JS -->
+    <script type="module" src="/build/assets/app-D3s-uFc7.js"></script>
+
+    <script>
+        // Wait for assets to load
+        setTimeout(() => {
+            // Test axios
+            const axiosResult = document.getElementById('axios-result');
+            if (typeof window.axios !== 'undefined') {
+                axiosResult.innerHTML = '<span class="text-green-600 font-bold">✅ window.axios est défini correctement!</span>';
+                axiosResult.innerHTML += '<br><code>' + typeof window.axios + '</code>';
+            } else {
+                axiosResult.innerHTML = '<span class="text-red-600 font-bold">❌ window.axios n\'est PAS défini!</span>';
+            }
+
+            // Test createChart
+            const createChartResult = document.getElementById('createchart-result');
+            if (typeof window.createChart !== 'undefined') {
+                createChartResult.innerHTML = '<span class="text-green-600 font-bold">✅ window.createChart est défini correctement!</span>';
+                createChartResult.innerHTML += '<br><code>' + typeof window.createChart + '</code>';
+            } else {
+                createChartResult.innerHTML = '<span class="text-red-600 font-bold">❌ window.createChart n\'est PAS défini!</span>';
+            }
+
+            // Test Alpine
+            const alpineResult = document.getElementById('alpine-result');
+            if (typeof window.Alpine !== 'undefined') {
+                alpineResult.innerHTML = '<span class="text-green-600 font-bold">✅ window.Alpine est défini correctement!</span>';
+                alpineResult.innerHTML += '<br><code>' + typeof window.Alpine + '</code>';
+            } else {
+                alpineResult.innerHTML = '<span class="text-red-600 font-bold">❌ window.Alpine n\'est PAS défini!</span>';
+            }
+
+            // Test Inertia (should NOT exist)
+            const inertiaResult = document.getElementById('inertia-result');
+            const inertiaTests = [
+                typeof window.Inertia,
+                typeof window.createInertiaApp,
+                document.querySelector('script[src*="inertia"]')
+            ];
+
+            if (inertiaTests.every(t => t === 'undefined' || t === null)) {
+                inertiaResult.innerHTML = '<span class="text-green-600 font-bold">✅ Aucune trace d\'Inertia (CORRECT!)</span>';
+            } else {
+                inertiaResult.innerHTML = '<span class="text-red-600 font-bold">❌ Inertia détecté (PROBLÈME!):</span>';
+                inertiaResult.innerHTML += '<br><code>' + JSON.stringify(inertiaTests) + '</code>';
+            }
+
+            // List all loaded scripts
+            const scripts = Array.from(document.querySelectorAll('script')).map(s => s.src);
+            console.log('Scripts chargés:', scripts);
+
+        }, 1000);
+    </script>
+</body>
+</html>

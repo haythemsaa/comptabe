@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clear ALL Caches - ComptaBE</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2563eb; margin-top: 0; }
+        button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover { background: #dc2626; }
+        button.success { background: #10b981; }
+        button.success:hover { background: #059669; }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background: #f3f4f6;
+        }
+        .error { background: #fee2e2; color: #991b1b; }
+        .success { background: #d1fae5; color: #065f46; }
+        .info { background: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🧹 Clear ALL Caches</h1>
+        <p>Cette page va supprimer <strong>TOUS</strong> les caches du navigateur pour ComptaBE:</p>
+        <ul>
+            <li>✓ Service Workers (désinstallation complète)</li>
+            <li>✓ Cache Storage API</li>
+            <li>✓ LocalStorage</li>
+            <li>✓ SessionStorage</li>
+            <li>✓ IndexedDB</li>
+            <li>✓ Cookies</li>
+        </ul>
+
+        <button onclick="clearEverything()">🔥 CLEAR EVERYTHING</button>
+        <button class="success" onclick="window.location.href='/dashboard'">↻ Go to Dashboard</button>
+
+        <div id="status"></div>
+
+        <h2>Instructions:</h2>
+        <ol>
+            <li>Cliquer sur "CLEAR EVERYTHING"</li>
+            <li>Attendre la confirmation</li>
+            <li>Fermer TOUS les onglets ComptaBE</li>
+            <li>Fermer complètement le navigateur</li>
+            <li>Rouvrir le navigateur</li>
+            <li>Accéder à <code>http://127.0.0.1:8002</code></li>
+        </ol>
+
+        <h3>Ou alternative rapide:</h3>
+        <pre>1. Ouvrir DevTools (F12)
+2. Aller dans l'onglet "Application"
+3. Cliquer sur "Clear storage" (à gauche)
+4. Cocher TOUT
+5. Cliquer "Clear site data"
+6. Fermer/rouvrir navigateur</pre>
+    </div>
+
+    <script>
+        const statusDiv = document.getElementById('status');
+
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}:</strong> ${message}`;
+            statusDiv.appendChild(div);
+        }
+
+        async function clearEverything() {
+            log('🚀 Début du nettoyage complet...', 'info');
+
+            try {
+                // 1. Unregister ALL Service Workers
+                log('1️⃣ Désinstallation des Service Workers...', 'info');
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (const registration of registrations) {
+                    await registration.unregister();
+                    log(`   ✓ Service Worker désinstallé: ${registration.scope}`, 'success');
+                }
+
+                // 2. Clear ALL Cache Storage
+                log('2️⃣ Suppression de Cache Storage...', 'info');
+                const cacheNames = await caches.keys();
+                for (const cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                    log(`   ✓ Cache supprimé: ${cacheName}`, 'success');
+                }
+
+                // 3. Clear LocalStorage
+                log('3️⃣ Suppression de LocalStorage...', 'info');
+                const localStorageKeys = Object.keys(localStorage);
+                localStorage.clear();
+                log(`   ✓ ${localStorageKeys.length} clés LocalStorage supprimées`, 'success');
+
+                // 4. Clear SessionStorage
+                log('4️⃣ Suppression de SessionStorage...', 'info');
+                const sessionStorageKeys = Object.keys(sessionStorage);
+                sessionStorage.clear();
+                log(`   ✓ ${sessionStorageKeys.length} clés SessionStorage supprimées`, 'success');
+
+                // 5. Clear IndexedDB
+                log('5️⃣ Suppression de IndexedDB...', 'info');
+                const databases = await indexedDB.databases();
+                for (const db of databases) {
+                    indexedDB.deleteDatabase(db.name);
+                    log(`   ✓ Database supprimée: ${db.name}`, 'success');
+                }
+
+                // 6. Clear Cookies (can't actually delete HTTP-only cookies from JS)
+                log('6️⃣ Tentative de suppression des cookies...', 'info');
+                document.cookie.split(";").forEach(function(c) {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+                log('   ⚠️ Cookies partiellement supprimés (HTTP-only non accessibles)', 'info');
+
+                log('', 'success');
+                log('✅ NETTOYAGE TERMINÉ AVEC SUCCÈS!', 'success');
+                log('', 'success');
+                log('🔴 ACTIONS REQUISES:', 'error');
+                log('1. Fermez TOUS les onglets de http://127.0.0.1:8002', 'error');
+                log('2. Fermez COMPLÈTEMENT le navigateur (Ctrl+Q / Cmd+Q)', 'error');
+                log('3. Rouvrez le navigateur', 'error');
+                log('4. Retournez sur http://127.0.0.1:8002', 'error');
+
+                // Optionally reload after a delay
+                setTimeout(() => {
+                    if (confirm('Tout est nettoyé! Voulez-vous recharger la page maintenant?')) {
+                        window.location.reload(true);
+                    }
+                }, 2000);
+
+            } catch (error) {
+                log(`❌ ERREUR: ${error.message}`, 'error');
+                console.error('Clear cache error:', error);
+            }
+        }
+
+        // Auto-run on load (optional - comment out if you want manual trigger only)
+        // window.addEventListener('load', () => {
+        //     setTimeout(() => {
+        //         if (confirm('Voulez-vous nettoyer TOUS les caches maintenant?')) {
+        //             clearEverything();
+        //         }
+        //     }, 500);
+        // });
+
+        log('📄 Page de nettoyage chargée. Prêt!', 'info');
+    </script>
+</body>
+</html>

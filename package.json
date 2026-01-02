@@ -1,0 +1,34 @@
+{
+    "name": "compta-be",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "devDependencies": {
+        "@tailwindcss/forms": "^0.5.7",
+        "@tailwindcss/typography": "^0.5.10",
+        "autoprefixer": "^10.4.18",
+        "axios": "^1.6.8",
+        "laravel-vite-plugin": "^1.0.2",
+        "postcss": "^8.4.38",
+        "tailwindcss": "^3.4.3",
+        "vite": "^5.2.8"
+    },
+    "dependencies": {
+        "@alpinejs/collapse": "^3.13.7",
+        "@alpinejs/focus": "^3.13.7",
+        "@alpinejs/mask": "^3.13.7",
+        "@alpinejs/persist": "^3.13.7",
+        "alpinejs": "^3.13.7",
+        "apexcharts": "^3.49.0",
+        "chart.js": "^4.4.2",
+        "flatpickr": "^4.6.13",
+        "gsap": "^3.12.5",
+        "marked": "^12.0.0",
+        "sortablejs": "^1.15.2",
+        "tom-select": "^2.3.1"
+    }
+}
