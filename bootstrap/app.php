@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscription' => \App\Http\Middleware\EnsureActiveSubscription::class,
             'subscription.feature' => \App\Http\Middleware\CheckSubscriptionFeature::class,
             'subscription.limit' => \App\Http\Middleware\CheckSubscriptionLimit::class,
+            'module' => \App\Http\Middleware\CheckModuleEnabled::class,
         ]);
 
         $middleware->web(append: [

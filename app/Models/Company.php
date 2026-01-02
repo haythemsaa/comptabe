@@ -501,6 +501,48 @@ class Company extends Model
     }
 
     /**
+     * Modules enabled for this company.
+     */
+    public function modules(): BelongsToMany
+    {
+        return $this->belongsToMany(Module::class, 'company_modules')
+            ->withPivot(['is_enabled', 'is_visible', 'enabled_at', 'disabled_at', 'enabled_by', 'status', 'trial_ends_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get only enabled modules.
+     */
+    public function enabledModules(): BelongsToMany
+    {
+        return $this->modules()->wherePivot('is_enabled', true);
+    }
+
+    /**
+     * Get only visible modules (for UI).
+     */
+    public function visibleModules(): BelongsToMany
+    {
+        return $this->modules()->wherePivot('is_visible', true)->wherePivot('is_enabled', true);
+    }
+
+    /**
+     * Check if company has module enabled.
+     */
+    public function hasModule(string $moduleCode): bool
+    {
+        return $this->enabledModules()->where('code', $moduleCode)->exists();
+    }
+
+    /**
+     * Module requests from this company.
+     */
+    public function moduleRequests(): HasMany
+    {
+        return $this->hasMany(ModuleRequest::class);
+    }
+
+    /**
      * Get current subscription plan.
      */
     public function getPlanAttribute(): ?SubscriptionPlan

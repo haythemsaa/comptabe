@@ -170,6 +170,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/progress', 'getProgress')->name('progress');
         });
 
+        // Modules (Marketplace & Management)
+        Route::prefix('modules')->name('modules.')->group(function () {
+            Route::get('/marketplace', [\App\Http\Controllers\TenantModuleController::class, 'marketplace'])->name('marketplace');
+            Route::get('/my-modules', [\App\Http\Controllers\TenantModuleController::class, 'myModules'])->name('my');
+            Route::post('/{module}/request', [\App\Http\Controllers\TenantModuleController::class, 'request'])->name('request');
+            Route::post('/{module}/toggle-visibility', [\App\Http\Controllers\TenantModuleController::class, 'toggleVisibility'])->name('toggle-visibility');
+        });
+
         // Invoices
         Route::prefix('invoices')->name('invoices.')->group(function () {
             Route::get('/', [InvoiceController::class, 'index'])->name('index');
@@ -873,6 +881,26 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->name('admin.')->grou
         Route::get('/companies', [\App\Http\Controllers\Admin\AdminSearchController::class, 'companies'])->name('companies');
         Route::get('/users', [\App\Http\Controllers\Admin\AdminSearchController::class, 'users'])->name('users');
         Route::get('/clients', [\App\Http\Controllers\Admin\AdminSearchController::class, 'clients'])->name('clients');
+    });
+
+    // Modules Management
+    Route::prefix('modules')->name('modules.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AdminModuleController::class, 'index'])->name('index');
+        Route::get('/{module}', [\App\Http\Controllers\Admin\AdminModuleController::class, 'show'])->name('show');
+
+        // Module assignment to companies
+        Route::get('/assign/{company}', [\App\Http\Controllers\Admin\AdminModuleController::class, 'assignForm'])->name('assign-form');
+        Route::post('/assign/{company}', [\App\Http\Controllers\Admin\AdminModuleController::class, 'assign'])->name('assign');
+        Route::post('/{company}/{module}/toggle', [\App\Http\Controllers\Admin\AdminModuleController::class, 'toggleEnable'])->name('toggle');
+        Route::delete('/{company}/{module}/detach', [\App\Http\Controllers\Admin\AdminModuleController::class, 'detach'])->name('detach');
+
+        // Module requests from tenants
+        Route::get('/requests/list', [\App\Http\Controllers\Admin\AdminModuleController::class, 'requests'])->name('requests');
+        Route::post('/requests/{moduleRequest}/approve', [\App\Http\Controllers\Admin\AdminModuleController::class, 'approveRequest'])->name('approve-request');
+        Route::post('/requests/{moduleRequest}/reject', [\App\Http\Controllers\Admin\AdminModuleController::class, 'rejectRequest'])->name('reject-request');
+
+        // Bulk operations
+        Route::post('/assign-core-all', [\App\Http\Controllers\Admin\AdminModuleController::class, 'assignCoreToAll'])->name('assign-core-all');
     });
 });
 
