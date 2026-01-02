@@ -49,7 +49,30 @@
                 currenciesConfig: @json(config('currencies.available')),
                 currencyConfig: null,
 
+                // Totals (calculated values, not getters)
+                subtotal: 0,
+                totalVat: 0,
+                total: 0,
+
                 init() {
+                    // CRITICAL: Remove dates from localStorage draft to force fresh dates
+                    const draftKey = 'comptabe_draft_invoice-form';
+                    const draft = localStorage.getItem(draftKey);
+                    if (draft) {
+                        try {
+                            const parsed = JSON.parse(draft);
+                            // Remove date fields from draft data
+                            if (parsed.data) {
+                                delete parsed.data.invoice_date;
+                                delete parsed.data.due_date;
+                                localStorage.setItem(draftKey, JSON.stringify(parsed));
+                                console.log('🗑️ Dates supprimées du brouillon');
+                            }
+                        } catch (e) {
+                            console.warn('Erreur nettoyage brouillon:', e);
+                        }
+                    }
+
                     this.updateCurrencyFormat();
 
                     // Restore lines from Laravel old() values (after validation error)
@@ -79,13 +102,42 @@
                     }
 
                     // Watch for line changes and recalculate totals
-                    this.$watch('lines', () => {
+                    this.$watch('lines', (newValue, oldValue) => {
+                        console.log('👀 Watch déclenché sur lines');
                         this.calculateTotals();
                     }, { deep: true });
 
-                    // Force initial calculation
+                    // IMPORTANT: Force dates to be today + 15 days (override any draft)
+                    // Use setTimeout to ensure this runs AFTER autoSave mixin restoration
                     this.$nextTick(() => {
-                        this.calculateTotals();
+                        setTimeout(() => {
+                            const today = '{{ date('Y-m-d') }}';
+                            const dueIn15Days = '{{ date('Y-m-d', strtotime('+15 days')) }}';
+
+                            // Only override if NOT from validation error (old() values)
+                            @if(!old('invoice_date'))
+                                this.invoiceDate = today;
+                                // Also update the input field directly
+                                const invoiceDateInput = document.querySelector('input[name="invoice_date"]');
+                                if (invoiceDateInput) {
+                                    invoiceDateInput.value = today;
+                                }
+                                console.log('📅 Date de facture forcée à aujourd\'hui:', today);
+                            @endif
+
+                            @if(!old('due_date'))
+                                this.dueDate = dueIn15Days;
+                                // Also update the input field directly
+                                const dueDateInput = document.querySelector('input[name="due_date"]');
+                                if (dueDateInput) {
+                                    dueDateInput.value = dueIn15Days;
+                                }
+                                console.log('📅 Date d\'échéance forcée à +15 jours:', dueIn15Days);
+                            @endif
+
+                            // Force initial calculation
+                            this.calculateTotals();
+                        }, 100); // Wait 100ms to ensure mixin has finished
                     });
                 },
 
@@ -132,7 +184,16 @@
                 },
 
                 calculateTotals() {
-                    // Trigger reactivity
+                    // Calculate subtotal
+                    this.subtotal = this.lines.reduce((sum, line) => sum + this.calculateLineTotal(line), 0);
+
+                    // Calculate VAT
+                    this.totalVat = this.lines.reduce((sum, line) => sum + this.calculateLineVat(line), 0);
+
+                    // Calculate total
+                    this.total = this.subtotal + this.totalVat;
+
+                    console.log('💰 Totaux calculés - HT:', this.subtotal, 'TVA:', this.totalVat, 'TTC:', this.total);
                 },
 
                 calculateLineTotal(line) {
@@ -145,17 +206,6 @@
                     return this.calculateLineTotal(line) * ((line.vatRate || 0) / 100);
                 },
 
-                get subtotal() {
-                    return this.lines.reduce((sum, line) => sum + this.calculateLineTotal(line), 0);
-                },
-
-                get totalVat() {
-                    return this.lines.reduce((sum, line) => sum + this.calculateLineVat(line), 0);
-                },
-
-                get total() {
-                    return this.subtotal + this.totalVat;
-                },
 
                 get vatBreakdown() {
                     const breakdown = {};
