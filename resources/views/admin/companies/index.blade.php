@@ -1,6 +1,16 @@
 <x-admin-layout>
     <x-slot name="title">Gestion des Entreprises</x-slot>
-    <x-slot name="header">Entreprises</x-slot>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <span>Entreprises</span>
+            <a href="{{ route('admin.companies.create') }}" class="px-4 py-2 bg-primary-500 hover:bg-primary-600 rounded-xl font-medium transition-colors flex items-center gap-2 text-sm">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Nouvelle Entreprise
+            </a>
+        </div>
+    </x-slot>
 
     <!-- Filters -->
     <div class="bg-secondary-800 rounded-xl border border-secondary-700 p-4 mb-6">

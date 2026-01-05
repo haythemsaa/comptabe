@@ -53,6 +53,133 @@
                     @csrf
                     @method('PUT')
 
+                    <!-- Invoice Template Selection -->
+                    <div class="card mb-6">
+                        <div class="card-header">
+                            <h2 class="font-semibold text-secondary-900 dark:text-white">Template de facture PDF</h2>
+                            <p class="text-sm text-secondary-500 dark:text-secondary-400 mt-1">Choisissez le design de vos factures</p>
+                        </div>
+                        <div class="card-body">
+                            <!-- Template Grid -->
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                                @php
+                                    $templates = \App\Services\InvoiceTemplateService::getTemplates();
+                                    $currentTemplate = $company->invoice_template ?? 'modern';
+                                @endphp
+                                @foreach($templates as $key => $template)
+                                    <label class="relative cursor-pointer group">
+                                        <input type="radio" name="invoice_template" value="{{ $key }}" class="sr-only peer" {{ $currentTemplate === $key ? 'checked' : '' }}>
+                                        <div class="border-2 rounded-xl p-3 transition-all peer-checked:border-primary-500 peer-checked:bg-primary-50 dark:peer-checked:bg-primary-900/20 border-secondary-200 dark:border-secondary-700 hover:border-secondary-300 dark:hover:border-secondary-600">
+                                            <!-- Preview -->
+                                            <div class="aspect-[3/4] rounded-lg mb-2 overflow-hidden border border-secondary-200 dark:border-secondary-700" style="background: linear-gradient(135deg, {{ $template['default_colors']['primary'] }}20, {{ $template['default_colors']['secondary'] }}10);">
+                                                <div class="h-full p-2 flex flex-col">
+                                                    <div class="h-2 rounded-full mb-2" style="background: {{ $template['default_colors']['primary'] }};"></div>
+                                                    <div class="flex-1 space-y-1">
+                                                        <div class="h-1 w-3/4 rounded bg-secondary-300 dark:bg-secondary-600"></div>
+                                                        <div class="h-1 w-1/2 rounded bg-secondary-200 dark:bg-secondary-700"></div>
+                                                        <div class="mt-2 space-y-0.5">
+                                                            <div class="h-0.5 w-full rounded bg-secondary-200 dark:bg-secondary-700"></div>
+                                                            <div class="h-0.5 w-full rounded bg-secondary-200 dark:bg-secondary-700"></div>
+                                                            <div class="h-0.5 w-full rounded bg-secondary-200 dark:bg-secondary-700"></div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="h-1.5 w-1/3 rounded ml-auto" style="background: {{ $template['default_colors']['secondary'] }};"></div>
+                                                </div>
+                                            </div>
+                                            <!-- Name -->
+                                            <p class="text-xs font-medium text-center text-secondary-700 dark:text-secondary-300">{{ $template['name'] }}</p>
+                                        </div>
+                                        <!-- Checkmark -->
+                                        <div class="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary-500 text-white flex items-center justify-center opacity-0 peer-checked:opacity-100 transition-opacity">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+
+                            <!-- Color Customization -->
+                            <div class="border-t border-secondary-200 dark:border-secondary-700 pt-4">
+                                <h3 class="text-sm font-medium text-secondary-900 dark:text-white mb-3">Personnalisation des couleurs</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="invoice_primary_color" class="form-label">Couleur principale</label>
+                                        <div class="flex items-center gap-3">
+                                            <input
+                                                type="color"
+                                                id="invoice_primary_color"
+                                                name="invoice_primary_color"
+                                                value="{{ old('invoice_primary_color', $company->invoice_primary_color ?? '#6366f1') }}"
+                                                class="w-12 h-10 rounded border border-secondary-300 dark:border-secondary-600 cursor-pointer"
+                                            >
+                                            <input
+                                                type="text"
+                                                value="{{ old('invoice_primary_color', $company->invoice_primary_color ?? '#6366f1') }}"
+                                                class="form-input font-mono text-sm flex-1"
+                                                pattern="^#[0-9A-Fa-f]{6}$"
+                                                placeholder="#6366f1"
+                                                oninput="document.getElementById('invoice_primary_color').value = this.value"
+                                            >
+                                        </div>
+                                        <p class="text-xs text-secondary-500 mt-1">En-tetes, accents principaux</p>
+                                    </div>
+                                    <div>
+                                        <label for="invoice_secondary_color" class="form-label">Couleur secondaire</label>
+                                        <div class="flex items-center gap-3">
+                                            <input
+                                                type="color"
+                                                id="invoice_secondary_color"
+                                                name="invoice_secondary_color"
+                                                value="{{ old('invoice_secondary_color', $company->invoice_secondary_color ?? '#1e293b') }}"
+                                                class="w-12 h-10 rounded border border-secondary-300 dark:border-secondary-600 cursor-pointer"
+                                            >
+                                            <input
+                                                type="text"
+                                                value="{{ old('invoice_secondary_color', $company->invoice_secondary_color ?? '#1e293b') }}"
+                                                class="form-input font-mono text-sm flex-1"
+                                                pattern="^#[0-9A-Fa-f]{6}$"
+                                                placeholder="#1e293b"
+                                                oninput="document.getElementById('invoice_secondary_color').value = this.value"
+                                            >
+                                        </div>
+                                        <p class="text-xs text-secondary-500 mt-1">Textes, tableaux, pieds de page</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preview Button -->
+                            <div class="mt-4 pt-4 border-t border-secondary-200 dark:border-secondary-700">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm text-secondary-600 dark:text-secondary-400">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Les modifications seront appliquees aux nouvelles factures PDF generees.
+                                    </p>
+                                    <button type="button" onclick="previewTemplate()" class="btn btn-secondary btn-sm">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                        Apercu PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        function previewTemplate() {
+                            const template = document.querySelector('input[name="invoice_template"]:checked')?.value || 'modern';
+                            const primaryColor = document.getElementById('invoice_primary_color')?.value || '#6366f1';
+                            const secondaryColor = document.getElementById('invoice_secondary_color')?.value || '#1e293b';
+
+                            const url = `{{ route('settings.invoices.preview-template') }}?template=${template}&primary_color=${encodeURIComponent(primaryColor)}&secondary_color=${encodeURIComponent(secondaryColor)}`;
+                            window.open(url, '_blank', 'width=800,height=1000');
+                        }
+                    </script>
+
                     <!-- Invoice Numbering -->
                     <div class="card mb-6">
                         <div class="card-header">

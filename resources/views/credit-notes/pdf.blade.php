@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Note de crédit {{ $creditNote->credit_note_number }}</title>
+    @php
+        $primaryColor = $templateColors['primary'] ?? '#6366f1';
+        $secondaryColor = $templateColors['secondary'] ?? '#1e293b';
+        $creditColor = '#dc2626'; // Red remains for credit notes
+    @endphp
     <style>
         * {
             margin: 0;
@@ -14,7 +19,7 @@
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 10pt;
             line-height: 1.4;
-            color: #1f2937;
+            color: {{ $secondaryColor }};
         }
         .page {
             padding: 30px 40px;
@@ -40,7 +45,7 @@
         .company-name {
             font-size: 18pt;
             font-weight: bold;
-            color: #2563eb;
+            color: {{ $primaryColor }};
             margin-bottom: 5px;
         }
         .company-info {
@@ -50,7 +55,7 @@
         .document-title {
             font-size: 24pt;
             font-weight: bold;
-            color: #dc2626;
+            color: {{ $creditColor }};
             margin-bottom: 10px;
         }
         .document-number {
@@ -159,7 +164,7 @@
             margin-bottom: 30px;
         }
         .items-table thead th {
-            background: #dc2626;
+            background: {{ $creditColor }};
             color: white;
             padding: 10px 12px;
             text-align: left;
@@ -196,7 +201,7 @@
             color: #6b7280;
         }
         .amount-negative {
-            color: #dc2626;
+            color: {{ $creditColor }};
         }
 
         /* Totals */
@@ -231,10 +236,10 @@
             padding: 5px 10px;
             text-align: right;
             font-weight: 500;
-            color: #dc2626;
+            color: {{ $creditColor }};
         }
         .totals-total {
-            background: #dc2626;
+            background: {{ $creditColor }};
             color: white;
             border-radius: 8px;
             margin-top: 10px;
@@ -300,13 +305,19 @@
         /* Credit Note Badge */
         .credit-badge {
             display: inline-block;
-            background: #dc2626;
+            background: {{ $creditColor }};
             color: white;
             padding: 8px 15px;
             border-radius: 20px;
             font-size: 9pt;
             font-weight: bold;
             margin-top: 10px;
+        }
+
+        /* Footer with company branding */
+        .footer-brand {
+            color: {{ $primaryColor }};
+            font-weight: bold;
         }
     </style>
 </head>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\DocumentScan;
 use App\Models\Invoice;
 use App\Models\Expense;
@@ -375,7 +376,8 @@ class AIController extends Controller
      */
     public function anomalies()
     {
-        $analysis = $this->categorizationService->analyzeSpendingPatterns();
+        $company = Company::current();
+        $analysis = $this->categorizationService->analyzeSpendingPatterns($company->id);
 
         return view('ai.anomalies', [
             'anomalies' => $analysis['anomalies'] ?? [],

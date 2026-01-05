@@ -207,11 +207,12 @@
     }
 
     /* ================= FORM INPUTS ================= */
-    .form-input {
+    .form-input,
+    .input {
         @apply w-full px-3.5 py-2;
         @apply rounded-md;
         @apply bg-white dark:bg-dark-200;
-        @apply border border-secondary-200 dark:border-dark-100;
+        @apply border border-secondary-300 dark:border-secondary-600;
         @apply text-secondary-700 dark:text-secondary-200;
         @apply placeholder-secondary-400 dark:placeholder-secondary-500;
         @apply transition-all duration-150;
@@ -219,27 +220,33 @@
         font-size: 0.9375rem;
     }
 
-    .form-input:focus {
+    .form-input:focus,
+    .input:focus {
         box-shadow: 0 3px 10px rgba(115, 103, 240, 0.15);
     }
 
-    .dark .form-input:focus {
+    .dark .form-input:focus,
+    .dark .input:focus {
         box-shadow: 0 3px 10px rgba(115, 103, 240, 0.25);
     }
 
-    .form-input:disabled {
+    .form-input:disabled,
+    .input:disabled {
         @apply bg-secondary-100 dark:bg-dark-300 cursor-not-allowed opacity-60;
     }
 
-    .form-input-error {
-        @apply border-danger-500;
+    .form-input-error,
+    .input-error {
+        @apply border-danger-500 !important;
     }
 
-    .form-input-error:focus {
+    .form-input-error:focus,
+    .input-error:focus {
         box-shadow: 0 3px 10px rgba(234, 84, 85, 0.15);
     }
 
-    .form-label {
+    .form-label,
+    .label {
         @apply block text-sm font-medium text-secondary-700 dark:text-secondary-300 mb-1;
     }
 

@@ -94,6 +94,19 @@ class PayrollController extends Controller
     }
 
     /**
+     * Generate unique employee number
+     */
+    public function generateEmployeeNumber()
+    {
+        $company = Company::current();
+        $employeeNumber = Employee::generateEmployeeNumber($company);
+
+        return response()->json([
+            'employee_number' => $employeeNumber,
+        ]);
+    }
+
+    /**
      * Store new employee
      */
     public function storeEmployee(Request $request)
@@ -105,16 +118,26 @@ class PayrollController extends Controller
             'employee_number' => 'required|string|max:50|unique:employees,employee_number',
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
+            'maiden_name' => 'nullable|string|max:100',
             'birth_date' => 'required|date|before:today',
+            'birth_place' => 'nullable|string|max:100',
+            'birth_country' => 'nullable|string|max:2',
+            'gender' => 'nullable|in:M,F,X',
+            'nationality' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
+            'mobile' => 'nullable|string|max:20',
             'hire_date' => 'required|date',
             'street' => 'nullable|string|max:255',
             'house_number' => 'nullable|string|max:20',
+            'box' => 'nullable|string|max:10',
             'postal_code' => 'nullable|string|max:10',
             'city' => 'nullable|string|max:100',
-            'country_code' => 'nullable|string|size:2',
+            'country_code' => 'nullable|string|max:2',
             'status' => 'required|in:active,on_leave,terminated',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
+            'emergency_contact_relationship' => 'nullable|string|max:50',
         ];
 
         // Add country-specific validation rules
@@ -124,9 +147,10 @@ class PayrollController extends Controller
             $rules['cnss_number'] = 'nullable|string|max:20|unique:employees,cnss_number';
             $rules['rib'] = 'nullable|string|max:20';
         } else {
-            // Belgium and others: National number, IBAN
+            // Belgium and others: National number, IBAN, BIC
             $rules['national_number'] = 'nullable|string|max:20|unique:employees,national_number';
             $rules['iban'] = 'nullable|string|max:34';
+            $rules['bic'] = 'nullable|string|max:11';
         }
 
         $validated = $request->validate($rules);
@@ -164,17 +188,28 @@ class PayrollController extends Controller
             'employee_number' => 'required|string|max:50|unique:employees,employee_number,' . $employee->id,
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
+            'maiden_name' => 'nullable|string|max:100',
             'birth_date' => 'required|date|before:today',
+            'birth_place' => 'nullable|string|max:100',
+            'birth_country' => 'nullable|string|max:2',
+            'gender' => 'nullable|in:M,F,X',
+            'nationality' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
+            'mobile' => 'nullable|string|max:20',
             'hire_date' => 'required|date',
             'termination_date' => 'nullable|date|after:hire_date',
+            'termination_reason' => 'nullable|string|max:255',
             'street' => 'nullable|string|max:255',
             'house_number' => 'nullable|string|max:20',
+            'box' => 'nullable|string|max:10',
             'postal_code' => 'nullable|string|max:10',
             'city' => 'nullable|string|max:100',
-            'country_code' => 'nullable|string|size:2',
+            'country_code' => 'nullable|string|max:2',
             'status' => 'required|in:active,on_leave,terminated',
+            'emergency_contact_name' => 'nullable|string|max:255',
+            'emergency_contact_phone' => 'nullable|string|max:20',
+            'emergency_contact_relationship' => 'nullable|string|max:50',
         ];
 
         // Add country-specific validation rules
@@ -184,9 +219,10 @@ class PayrollController extends Controller
             $rules['cnss_number'] = 'nullable|string|max:20|unique:employees,cnss_number,' . $employee->id;
             $rules['rib'] = 'nullable|string|max:20';
         } else {
-            // Belgium and others: National number, IBAN
+            // Belgium and others: National number, IBAN, BIC
             $rules['national_number'] = 'nullable|string|max:20|unique:employees,national_number,' . $employee->id;
             $rules['iban'] = 'nullable|string|max:34';
+            $rules['bic'] = 'nullable|string|max:11';
         }
 
         $validated = $request->validate($rules);

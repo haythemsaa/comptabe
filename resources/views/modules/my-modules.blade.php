@@ -106,13 +106,7 @@
                             <!-- Module Icon & Info -->
                             <div class="flex items-start gap-4 mb-4">
                                 <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-xl flex items-center justify-center flex-shrink-0 text-primary-600">
-                                    @if(!empty($module->icon))
-                                        {!! $module->icon !!}
-                                    @else
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                                        </svg>
-                                    @endif
+                                    {!! $module->icon_html !!}
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-base font-semibold text-secondary-900 dark:text-white truncate">{{ $module->name }}</h4>
@@ -159,8 +153,12 @@
                                     </button>
                                 </div>
 
-                                @if($module->route_name)
-                                    <a href="{{ route($module->route_name) }}" class="btn btn-sm btn-primary">
+                                @php
+                                    $routes = is_array($module->routes) ? $module->routes : json_decode($module->routes ?? '[]', true);
+                                    $mainRoute = $routes[0] ?? null;
+                                @endphp
+                                @if($mainRoute && Route::has($mainRoute))
+                                    <a href="{{ route($mainRoute) }}" class="btn btn-sm btn-primary">
                                         Ouvrir
                                     </a>
                                 @endif
@@ -208,13 +206,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center text-primary-600 mr-3">
-                                            @if(!empty($request->module->icon))
-                                                {!! $request->module->icon !!}
-                                            @else
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                                                </svg>
-                                            @endif
+                                            {!! $request->module->icon_html !!}
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-secondary-900 dark:text-white">{{ $request->module->name }}</div>

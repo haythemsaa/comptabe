@@ -6,6 +6,8 @@ use App\Mail\UserInvitation;
 use App\Models\Company;
 use App\Models\InvitationToken;
 use App\Models\User;
+use App\Services\InvoiceTemplateService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -177,17 +179,67 @@ class SettingsController extends Controller
             'default_vat_rate' => 'nullable|numeric|min:0|max:100',
             'invoice_footer_text' => 'nullable|string|max:1000',
             'invoice_notes_template' => 'nullable|string|max:2000',
+            // Invoice template settings
+            'invoice_template' => 'nullable|string|in:classic,modern,minimal,creative,corporate,elegant',
+            'invoice_primary_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
+            'invoice_secondary_color' => 'nullable|string|regex:/^#[0-9A-Fa-f]{6}$/',
         ]);
+
+        // Extract template fields
+        $templateFields = [
+            'invoice_template' => $validated['invoice_template'] ?? $company->invoice_template ?? 'modern',
+            'invoice_primary_color' => $validated['invoice_primary_color'] ?? $company->invoice_primary_color,
+            'invoice_secondary_color' => $validated['invoice_secondary_color'] ?? $company->invoice_secondary_color,
+        ];
+
+        // Remove template fields from validated array for settings
+        unset($validated['invoice_template'], $validated['invoice_primary_color'], $validated['invoice_secondary_color']);
 
         // Build settings array
         $settings = $company->settings ?? [];
         $settings['invoice'] = array_merge($settings['invoice'] ?? [], $validated);
 
-        $company->update(['settings' => $settings]);
+        // Update company with template fields and settings
+        $company->update(array_merge(['settings' => $settings], $templateFields));
 
         return redirect()
             ->route('settings.invoices')
             ->with('success', 'Paramètres de facturation mis à jour.');
+    }
+
+    /**
+     * Preview invoice template PDF
+     */
+    public function previewTemplate(Request $request)
+    {
+        $company = Company::current();
+
+        $templateKey = $request->get('template', $company->invoice_template ?? 'modern');
+        $primaryColor = $request->get('primary_color', $company->invoice_primary_color);
+        $secondaryColor = $request->get('secondary_color', $company->invoice_secondary_color);
+
+        // Validate template key
+        $validTemplates = array_keys(InvoiceTemplateService::TEMPLATES);
+        if (!in_array($templateKey, $validTemplates)) {
+            $templateKey = 'modern';
+        }
+
+        // Get template configuration
+        $template = InvoiceTemplateService::getTemplate($templateKey);
+        $templateColors = [
+            'primary' => $primaryColor ?? $template['default_colors']['primary'],
+            'secondary' => $secondaryColor ?? $template['default_colors']['secondary'],
+        ];
+
+        // Get sample invoice data
+        $sampleData = InvoiceTemplateService::getSampleInvoiceData($company);
+        $invoice = $sampleData['invoice'];
+
+        // Generate PDF
+        $viewPath = InvoiceTemplateService::getTemplatePath($templateKey);
+        $pdf = Pdf::loadView($viewPath, compact('invoice', 'company', 'templateColors'));
+
+        return $pdf->stream("Preview_Template_{$templateKey}.pdf");
     }
 
     /**

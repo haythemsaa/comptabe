@@ -17,6 +17,7 @@ use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TenantController;
+use App\Http\Controllers\TenantModuleController;
 use App\Http\Controllers\QuoteController;
 use App\Http\Controllers\RecurringInvoiceController;
 use App\Http\Controllers\InvoiceBatchController;
@@ -54,6 +55,15 @@ use App\Http\Controllers\DocumentFolderController;
 use App\Http\Controllers\DocumentTagController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\CrmController;
+use App\Http\Controllers\StockController;
+use App\Http\Controllers\EmployeeExpenseController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TimesheetController;
+use App\Http\Controllers\AssetController;
+use App\Http\Controllers\EcommerceController;
+use App\Http\Controllers\FleetController;
+use App\Http\Controllers\CurrencyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -176,6 +186,255 @@ Route::middleware('auth')->group(function () {
             Route::get('/my-modules', [\App\Http\Controllers\TenantModuleController::class, 'myModules'])->name('my');
             Route::post('/{module}/request', [\App\Http\Controllers\TenantModuleController::class, 'request'])->name('request');
             Route::post('/{module}/toggle-visibility', [\App\Http\Controllers\TenantModuleController::class, 'toggleVisibility'])->name('toggle-visibility');
+        });
+
+        // CRM Pipeline
+        Route::prefix('crm')->name('crm.')->middleware('module:crm')->group(function () {
+            Route::get('/', [CrmController::class, 'dashboard'])->name('dashboard');
+            Route::get('/pipeline', [CrmController::class, 'pipeline'])->name('pipeline');
+
+            // Opportunities
+            Route::prefix('opportunities')->name('opportunities.')->group(function () {
+                Route::get('/', [CrmController::class, 'index'])->name('index');
+                Route::get('/create', [CrmController::class, 'create'])->name('create');
+                Route::post('/', [CrmController::class, 'store'])->name('store');
+                Route::get('/{opportunity}', [CrmController::class, 'show'])->name('show');
+                Route::get('/{opportunity}/edit', [CrmController::class, 'edit'])->name('edit');
+                Route::put('/{opportunity}', [CrmController::class, 'update'])->name('update');
+                Route::delete('/{opportunity}', [CrmController::class, 'destroy'])->name('destroy');
+                Route::patch('/{opportunity}/stage', [CrmController::class, 'updateStage'])->name('update-stage');
+                Route::post('/{opportunity}/won', [CrmController::class, 'markWon'])->name('mark-won');
+                Route::post('/{opportunity}/lost', [CrmController::class, 'markLost'])->name('mark-lost');
+            });
+
+            // Activities
+            Route::prefix('activities')->name('activities.')->group(function () {
+                Route::get('/', [CrmController::class, 'activities'])->name('index');
+                Route::post('/', [CrmController::class, 'storeActivity'])->name('store');
+                Route::patch('/{activity}/toggle', [CrmController::class, 'toggleActivity'])->name('toggle');
+                Route::delete('/{activity}', [CrmController::class, 'destroyActivity'])->name('destroy');
+            });
+        });
+
+        // Stock Management
+        Route::prefix('stock')->name('stock.')->middleware('module:stock')->group(function () {
+            Route::get('/', [StockController::class, 'dashboard'])->name('dashboard');
+
+            // Warehouses
+            Route::prefix('warehouses')->name('warehouses.')->group(function () {
+                Route::get('/', [StockController::class, 'warehouses'])->name('index');
+                Route::get('/create', [StockController::class, 'createWarehouse'])->name('create');
+                Route::post('/', [StockController::class, 'storeWarehouse'])->name('store');
+                Route::get('/{warehouse}', [StockController::class, 'showWarehouse'])->name('show');
+                Route::get('/{warehouse}/edit', [StockController::class, 'editWarehouse'])->name('edit');
+                Route::put('/{warehouse}', [StockController::class, 'updateWarehouse'])->name('update');
+                Route::delete('/{warehouse}', [StockController::class, 'destroyWarehouse'])->name('destroy');
+                Route::post('/{warehouse}/set-default', [StockController::class, 'setDefaultWarehouse'])->name('set-default');
+            });
+
+            // Stock Levels
+            Route::get('/levels', [StockController::class, 'stockLevels'])->name('levels');
+            Route::get('/levels/{stock}/edit', [StockController::class, 'editStockLevel'])->name('levels.edit');
+            Route::put('/levels/{stock}', [StockController::class, 'updateStockLevel'])->name('levels.update');
+
+            // Stock Movements
+            Route::prefix('movements')->name('movements.')->group(function () {
+                Route::get('/', [StockController::class, 'movements'])->name('index');
+                Route::get('/create', [StockController::class, 'createMovement'])->name('create');
+                Route::post('/', [StockController::class, 'storeMovement'])->name('store');
+                Route::get('/{movement}', [StockController::class, 'showMovement'])->name('show');
+                Route::get('/{movement}/edit', [StockController::class, 'editMovement'])->name('edit');
+                Route::put('/{movement}', [StockController::class, 'updateMovement'])->name('update');
+                Route::delete('/{movement}', [StockController::class, 'destroyMovement'])->name('destroy');
+                Route::post('/{movement}/validate', [StockController::class, 'validateMovement'])->name('validate');
+                Route::post('/{movement}/cancel', [StockController::class, 'cancelMovement'])->name('cancel');
+            });
+
+            // Inventory Sessions
+            Route::prefix('inventories')->name('inventories.')->group(function () {
+                Route::get('/', [StockController::class, 'inventories'])->name('index');
+                Route::get('/create', [StockController::class, 'createInventory'])->name('create');
+                Route::post('/', [StockController::class, 'storeInventory'])->name('store');
+                Route::get('/{inventory}', [StockController::class, 'showInventory'])->name('show');
+                Route::get('/{inventory}/edit', [StockController::class, 'editInventory'])->name('edit');
+                Route::put('/{inventory}', [StockController::class, 'updateInventory'])->name('update');
+                Route::delete('/{inventory}', [StockController::class, 'destroyInventory'])->name('destroy');
+                Route::post('/{inventory}/start', [StockController::class, 'startInventory'])->name('start');
+                Route::get('/{inventory}/count', [StockController::class, 'countInventory'])->name('count');
+                Route::post('/{inventory}/count', [StockController::class, 'saveCount'])->name('save-count');
+                Route::post('/{inventory}/validate', [StockController::class, 'validateInventory'])->name('validate');
+                Route::post('/{inventory}/cancel', [StockController::class, 'cancelInventory'])->name('cancel');
+            });
+
+            // Stock Alerts
+            Route::prefix('alerts')->name('alerts.')->group(function () {
+                Route::get('/', [StockController::class, 'alerts'])->name('index');
+                Route::post('/mark-all-read', [StockController::class, 'markAllAlertsRead'])->name('mark-all-read');
+                Route::post('/{alert}/mark-read', [StockController::class, 'markAlertRead'])->name('mark-read');
+                Route::post('/{alert}/resolve', [StockController::class, 'resolveAlert'])->name('resolve');
+            });
+
+            // API endpoints
+            Route::get('/api/stock-level', [StockController::class, 'apiGetStockLevel'])->name('api.stock-level');
+        });
+
+        // Employee Expenses (Notes de frais)
+        Route::prefix('expenses')->name('expenses.')->middleware('module:expenses')->group(function () {
+            Route::get('/', [EmployeeExpenseController::class, 'dashboard'])->name('dashboard');
+            Route::get('/list', [EmployeeExpenseController::class, 'index'])->name('index');
+            Route::get('/create', [EmployeeExpenseController::class, 'create'])->name('create');
+            Route::post('/', [EmployeeExpenseController::class, 'store'])->name('store');
+            Route::get('/{expense}', [EmployeeExpenseController::class, 'show'])->name('show');
+            Route::get('/{expense}/edit', [EmployeeExpenseController::class, 'edit'])->name('edit');
+            Route::put('/{expense}', [EmployeeExpenseController::class, 'update'])->name('update');
+            Route::delete('/{expense}', [EmployeeExpenseController::class, 'destroy'])->name('destroy');
+
+            // Expense Reports
+            Route::prefix('reports')->name('reports.')->group(function () {
+                Route::get('/', [EmployeeExpenseController::class, 'reports'])->name('index');
+                Route::get('/create', [EmployeeExpenseController::class, 'createReport'])->name('create');
+                Route::post('/', [EmployeeExpenseController::class, 'storeReport'])->name('store');
+                Route::get('/{report}', [EmployeeExpenseController::class, 'showReport'])->name('show');
+                Route::post('/{report}/submit', [EmployeeExpenseController::class, 'submitReport'])->name('submit');
+            });
+
+            // Approval (Manager)
+            Route::prefix('approval')->name('approval.')->group(function () {
+                Route::get('/', [EmployeeExpenseController::class, 'pendingApproval'])->name('index');
+                Route::get('/{report}/review', [EmployeeExpenseController::class, 'reviewReport'])->name('review');
+                Route::post('/{report}/approve', [EmployeeExpenseController::class, 'approveReport'])->name('approve');
+                Route::post('/{report}/reject', [EmployeeExpenseController::class, 'rejectReport'])->name('reject');
+            });
+
+            // Categories
+            Route::get('/categories', [EmployeeExpenseController::class, 'categories'])->name('categories');
+            Route::post('/categories', [EmployeeExpenseController::class, 'storeCategory'])->name('categories.store');
+        });
+
+        // Projects Management
+        Route::prefix('projects')->name('projects.')->middleware('module:projects')->group(function () {
+            Route::get('/', [ProjectController::class, 'index'])->name('index');
+            Route::get('/create', [ProjectController::class, 'create'])->name('create');
+            Route::post('/', [ProjectController::class, 'store'])->name('store');
+            Route::get('/{project}', [ProjectController::class, 'show'])->name('show');
+            Route::get('/{project}/edit', [ProjectController::class, 'edit'])->name('edit');
+            Route::put('/{project}', [ProjectController::class, 'update'])->name('update');
+            Route::delete('/{project}', [ProjectController::class, 'destroy'])->name('destroy');
+
+            // Kanban board
+            Route::get('/{project}/kanban', [ProjectController::class, 'kanban'])->name('kanban');
+
+            // Tasks
+            Route::post('/{project}/tasks', [ProjectController::class, 'storeTask'])->name('tasks.store');
+            Route::put('/{project}/tasks/{task}', [ProjectController::class, 'updateTask'])->name('tasks.update');
+            Route::delete('/{project}/tasks/{task}', [ProjectController::class, 'destroyTask'])->name('tasks.destroy');
+            Route::post('/{project}/tasks/reorder', [ProjectController::class, 'reorderTasks'])->name('tasks.reorder');
+        });
+
+        // Timesheets
+        Route::prefix('timesheets')->name('timesheets.')->middleware('module:timesheet')->group(function () {
+            Route::get('/', [TimesheetController::class, 'index'])->name('index');
+            Route::get('/week', [TimesheetController::class, 'week'])->name('week');
+            Route::post('/', [TimesheetController::class, 'store'])->name('store');
+            Route::put('/{timesheet}', [TimesheetController::class, 'update'])->name('update');
+            Route::delete('/{timesheet}', [TimesheetController::class, 'destroy'])->name('destroy');
+
+            // Submission and approval
+            Route::post('/submit', [TimesheetController::class, 'submit'])->name('submit');
+            Route::post('/approve', [TimesheetController::class, 'approve'])->name('approve');
+            Route::post('/reject', [TimesheetController::class, 'reject'])->name('reject');
+
+            // API for tasks
+            Route::get('/projects/{project}/tasks', [TimesheetController::class, 'getTasks'])->name('project.tasks');
+        });
+
+        // Assets (Immobilisations)
+        Route::prefix('assets')->name('assets.')->middleware('module:assets')->group(function () {
+            Route::get('/', [AssetController::class, 'index'])->name('index');
+            Route::get('/create', [AssetController::class, 'create'])->name('create');
+            Route::post('/', [AssetController::class, 'store'])->name('store');
+            Route::get('/categories', [AssetController::class, 'categories'])->name('categories');
+            Route::post('/categories', [AssetController::class, 'storeCategory'])->name('categories.store');
+            Route::put('/categories/{category}', [AssetController::class, 'updateCategory'])->name('categories.update');
+            Route::delete('/categories/{category}', [AssetController::class, 'destroyCategory'])->name('categories.destroy');
+            Route::post('/depreciation/post-all', [AssetController::class, 'postAllDueDepreciations'])->name('depreciation.post-all');
+            Route::get('/{asset}', [AssetController::class, 'show'])->name('show');
+            Route::get('/{asset}/edit', [AssetController::class, 'edit'])->name('edit');
+            Route::put('/{asset}', [AssetController::class, 'update'])->name('update');
+            Route::delete('/{asset}', [AssetController::class, 'destroy'])->name('destroy');
+            Route::post('/{asset}/activate', [AssetController::class, 'activate'])->name('activate');
+            Route::post('/{asset}/dispose', [AssetController::class, 'dispose'])->name('dispose');
+            Route::post('/{asset}/sell', [AssetController::class, 'sell'])->name('sell');
+            Route::post('/depreciation/{depreciation}/post', [AssetController::class, 'postDepreciation'])->name('depreciation.post');
+        });
+
+        // E-commerce Integration
+        Route::prefix('ecommerce')->name('ecommerce.')->middleware('module:ecommerce')->group(function () {
+            Route::get('/', [EcommerceController::class, 'index'])->name('index');
+
+            // Connections
+            Route::get('/connections/create', [EcommerceController::class, 'createConnection'])->name('connections.create');
+            Route::post('/connections', [EcommerceController::class, 'storeConnection'])->name('connections.store');
+            Route::get('/connections/{connection}/edit', [EcommerceController::class, 'editConnection'])->name('connections.edit');
+            Route::put('/connections/{connection}', [EcommerceController::class, 'updateConnection'])->name('connections.update');
+            Route::delete('/connections/{connection}', [EcommerceController::class, 'destroyConnection'])->name('connections.destroy');
+            Route::post('/connections/{connection}/sync', [EcommerceController::class, 'syncOrders'])->name('connections.sync');
+
+            // Orders
+            Route::get('/orders', [EcommerceController::class, 'orders'])->name('orders.index');
+            Route::get('/orders/{order}', [EcommerceController::class, 'showOrder'])->name('orders.show');
+            Route::post('/orders/{order}/invoice', [EcommerceController::class, 'createInvoiceFromOrder'])->name('orders.invoice');
+            Route::post('/orders/batch-invoice', [EcommerceController::class, 'createInvoicesFromOrders'])->name('orders.batch-invoice');
+
+            // Product Mappings
+            Route::get('/connections/{connection}/mappings', [EcommerceController::class, 'productMappings'])->name('mappings.index');
+            Route::post('/connections/{connection}/mappings', [EcommerceController::class, 'storeMapping'])->name('mappings.store');
+            Route::delete('/mappings/{mapping}', [EcommerceController::class, 'destroyMapping'])->name('mappings.destroy');
+
+            // Sync Logs
+            Route::get('/connections/{connection}/logs', [EcommerceController::class, 'syncLogs'])->name('logs.index');
+        });
+
+        // Fleet Management (Véhicules)
+        Route::prefix('fleet')->name('fleet.')->middleware('module:fleet')->group(function () {
+            Route::get('/', [FleetController::class, 'index'])->name('index');
+            Route::get('/create', [FleetController::class, 'create'])->name('create');
+            Route::post('/', [FleetController::class, 'store'])->name('store');
+            Route::get('/atn-report', [FleetController::class, 'atnReport'])->name('atn-report');
+            Route::get('/reminders', [FleetController::class, 'reminders'])->name('reminders');
+            Route::post('/reminders/{reminder}/complete', [FleetController::class, 'completeReminder'])->name('reminders.complete');
+            Route::get('/{vehicle}', [FleetController::class, 'show'])->name('show');
+            Route::get('/{vehicle}/edit', [FleetController::class, 'edit'])->name('edit');
+            Route::put('/{vehicle}', [FleetController::class, 'update'])->name('update');
+            Route::delete('/{vehicle}', [FleetController::class, 'destroy'])->name('destroy');
+
+            // Expenses
+            Route::get('/expenses/list', [FleetController::class, 'expenses'])->name('expenses.index');
+            Route::get('/{vehicle}/expenses', [FleetController::class, 'expenses'])->name('expenses.vehicle');
+            Route::post('/expenses', [FleetController::class, 'storeExpense'])->name('expenses.store');
+
+            // Reservations
+            Route::get('/reservations/list', [FleetController::class, 'reservations'])->name('reservations.index');
+            Route::post('/reservations', [FleetController::class, 'storeReservation'])->name('reservations.store');
+            Route::post('/reservations/{reservation}/approve', [FleetController::class, 'approveReservation'])->name('reservations.approve');
+            Route::post('/reservations/{reservation}/reject', [FleetController::class, 'rejectReservation'])->name('reservations.reject');
+        });
+
+        // Multi-Currency Management
+        Route::prefix('currencies')->name('currencies.')->middleware('module:currencies')->group(function () {
+            Route::get('/', [CurrencyController::class, 'index'])->name('index');
+            Route::post('/add', [CurrencyController::class, 'addCurrency'])->name('add');
+            Route::put('/{companyCurrency}', [CurrencyController::class, 'updateCurrency'])->name('update');
+            Route::post('/{companyCurrency}/default', [CurrencyController::class, 'setDefault'])->name('set-default');
+            Route::delete('/{companyCurrency}', [CurrencyController::class, 'removeCurrency'])->name('remove');
+            Route::get('/rates', [CurrencyController::class, 'rates'])->name('rates');
+            Route::post('/rates/fetch', [CurrencyController::class, 'fetchRates'])->name('rates.fetch');
+            Route::post('/rates/manual', [CurrencyController::class, 'setManualRate'])->name('rates.manual');
+            Route::get('/differences', [CurrencyController::class, 'exchangeDifferences'])->name('differences');
+            // API
+            Route::get('/api/list', [CurrencyController::class, 'getCompanyCurrencies'])->name('api.list');
+            Route::post('/api/convert', [CurrencyController::class, 'convert'])->name('api.convert');
+            Route::get('/api/rate', [CurrencyController::class, 'getRate'])->name('api.rate');
         });
 
         // Invoices
@@ -366,6 +625,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/employees/{employee}/edit', [\App\Http\Controllers\PayrollController::class, 'editEmployee'])->name('employees.edit');
             Route::put('/employees/{employee}', [\App\Http\Controllers\PayrollController::class, 'updateEmployee'])->name('employees.update');
             Route::delete('/employees/{employee}', [\App\Http\Controllers\PayrollController::class, 'destroyEmployee'])->name('employees.destroy');
+            Route::post('/employees/generate-number', [\App\Http\Controllers\PayrollController::class, 'generateEmployeeNumber'])->name('employees.generate-number');
 
             // Payslips
             Route::get('/payslips', [\App\Http\Controllers\PayrollController::class, 'payslips'])->name('payslips.index');
@@ -610,6 +870,7 @@ Route::middleware('auth')->group(function () {
             Route::post('/peppol/test', [SettingsController::class, 'testPeppolConnection'])->name('peppol.test');
             Route::get('/invoices', [SettingsController::class, 'invoices'])->name('invoices');
             Route::put('/invoices', [SettingsController::class, 'updateInvoices'])->name('invoices.update');
+            Route::get('/invoices/preview-template', [SettingsController::class, 'previewTemplate'])->name('invoices.preview-template');
             Route::get('/users', [SettingsController::class, 'users'])->name('users');
             Route::post('/users/invite', [SettingsController::class, 'inviteUser'])->name('users.invite');
             Route::put('/users/{user}/role', [SettingsController::class, 'updateUserRole'])->name('users.role');
@@ -646,6 +907,14 @@ Route::middleware('auth')->group(function () {
                 Route::get('/search', [ProductCategoryController::class, 'search'])->name('search');
             });
         });
+
+        // Modules Marketplace & Management (Tenant)
+        Route::prefix('modules')->name('modules.')->group(function () {
+            Route::get('/marketplace', [TenantModuleController::class, 'marketplace'])->name('marketplace');
+            Route::get('/my-modules', [TenantModuleController::class, 'myModules'])->name('my-modules');
+            Route::post('/{module}/request', [TenantModuleController::class, 'request'])->name('request');
+            Route::post('/{module}/toggle-visibility', [TenantModuleController::class, 'toggleVisibility'])->name('toggle-visibility');
+        });
     });
 });
 
@@ -661,6 +930,8 @@ Route::middleware(['auth', 'superadmin'])->prefix('admin')->name('admin.')->grou
     // Companies Management
     Route::prefix('companies')->name('companies.')->group(function () {
         Route::get('/', [AdminCompanyController::class, 'index'])->name('index');
+        Route::get('/create', [AdminCompanyController::class, 'create'])->name('create');
+        Route::post('/', [AdminCompanyController::class, 'store'])->name('store');
         Route::get('/{company}', [AdminCompanyController::class, 'show'])->name('show');
         Route::get('/{company}/edit', [AdminCompanyController::class, 'edit'])->name('edit');
         Route::put('/{company}', [AdminCompanyController::class, 'update'])->name('update');

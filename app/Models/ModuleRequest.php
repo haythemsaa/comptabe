@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Traits\BelongsToTenant;
+use App\Models\Traits\BelongsToTenant;
 use App\Notifications\ModuleRequestApprovedNotification;
 use App\Notifications\ModuleRequestRejectedNotification;
 

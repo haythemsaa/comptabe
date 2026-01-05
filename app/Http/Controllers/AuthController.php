@@ -55,6 +55,10 @@ class AuthController extends Controller
             ]);
 
             // Redirect based on user type
+            if ($user->is_superadmin) {
+                return redirect()->intended(route('admin.dashboard'));
+            }
+
             if (in_array($user->user_type, ['accountant', 'collaborator']) && $user->default_firm_id) {
                 // Set the current firm in session
                 session(['current_firm_id' => $user->default_firm_id]);

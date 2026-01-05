@@ -113,6 +113,31 @@
                     </a>
                 </div>
 
+                <!-- Modules Section -->
+                <div class="mb-4">
+                    <p x-show="!sidebarCollapsed" x-cloak class="px-3 text-xs font-semibold text-secondary-500 uppercase tracking-wider mb-2">Modules</p>
+
+                    <a href="{{ route('admin.modules.index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('admin.modules.index') || request()->routeIs('admin.modules.show') ? 'bg-danger-500/20 text-danger-400' : 'text-secondary-300 hover:bg-secondary-700 hover:text-white' }}">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <span x-show="!sidebarCollapsed" x-cloak class="whitespace-nowrap flex-1">Catalogue</span>
+                        @php $moduleCount = \App\Models\Module::active()->count(); @endphp
+                        <span x-show="!sidebarCollapsed" x-cloak class="px-2 py-0.5 text-xs bg-secondary-700 rounded-full">{{ $moduleCount }}</span>
+                    </a>
+
+                    <a href="{{ route('admin.modules.requests') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all {{ request()->routeIs('admin.modules.requests') ? 'bg-danger-500/20 text-danger-400' : 'text-secondary-300 hover:bg-secondary-700 hover:text-white' }}">
+                        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <span x-show="!sidebarCollapsed" x-cloak class="whitespace-nowrap flex-1">Demandes</span>
+                        @php $pendingModuleRequests = \App\Models\ModuleRequest::where('status', 'pending')->count(); @endphp
+                        @if($pendingModuleRequests > 0)
+                            <span x-show="!sidebarCollapsed" x-cloak class="px-2 py-0.5 text-xs bg-warning-500/20 text-warning-400 rounded-full animate-pulse">{{ $pendingModuleRequests }}</span>
+                        @endif
+                    </a>
+                </div>
+
                 <!-- Abonnements Section -->
                 <div class="mb-4">
                     <p x-show="!sidebarCollapsed" x-cloak class="px-3 text-xs font-semibold text-secondary-500 uppercase tracking-wider mb-2">Abonnements</p>

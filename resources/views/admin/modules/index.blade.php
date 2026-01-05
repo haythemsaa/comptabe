@@ -112,11 +112,9 @@
                             </div>
                             <p class="text-secondary-400 text-sm">{{ Str::limit($module->description, 80) }}</p>
                         </div>
-                        @if(!empty($module->icon))
-                            <div class="w-10 h-10 flex items-center justify-center text-primary-400 ml-3">
-                                {!! $module->icon !!}
-                            </div>
-                        @endif
+                        <div class="w-10 h-10 flex items-center justify-center text-primary-400 ml-3">
+                            {!! $module->icon_html !!}
+                        </div>
                     </div>
 
                     <div class="flex items-center justify-between text-xs text-secondary-400 mb-3">

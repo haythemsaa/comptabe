@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\Quote;
 use App\Models\Partner;
 use App\Models\VatCode;
 use App\Models\ChartOfAccount;
+use App\Services\InvoiceTemplateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -345,7 +347,12 @@ class QuoteController extends Controller
     {
         $quote->load(['partner', 'lines', 'company']);
 
-        $pdf = Pdf::loadView('quotes.pdf', compact('quote'));
+        // Get company template colors
+        $company = Company::current();
+        $template = InvoiceTemplateService::getCompanyTemplate($company);
+        $templateColors = $template['colors'];
+
+        $pdf = Pdf::loadView('quotes.pdf', compact('quote', 'templateColors'));
 
         return $pdf->download("Devis_{$quote->quote_number}.pdf");
     }

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\Partner;
 use App\Models\VatCode;
 use App\Models\ChartOfAccount;
+use App\Services\InvoiceTemplateService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -244,7 +246,12 @@ class CreditNoteController extends Controller
     {
         $creditNote->load(['partner', 'lines', 'company', 'invoice']);
 
-        $pdf = Pdf::loadView('credit-notes.pdf', compact('creditNote'));
+        // Get company template colors
+        $company = Company::current();
+        $template = InvoiceTemplateService::getCompanyTemplate($company);
+        $templateColors = $template['colors'];
+
+        $pdf = Pdf::loadView('credit-notes.pdf', compact('creditNote', 'templateColors'));
 
         return $pdf->download("NC_{$creditNote->credit_note_number}.pdf");
     }

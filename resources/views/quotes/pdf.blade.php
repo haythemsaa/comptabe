@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Devis {{ $quote->quote_number }}</title>
+    @php
+        $primaryColor = $templateColors['primary'] ?? '#0891b2';
+        $secondaryColor = $templateColors['secondary'] ?? '#1e293b';
+    @endphp
     <style>
         * {
             margin: 0;
@@ -14,7 +18,7 @@
             font-family: 'DejaVu Sans', sans-serif;
             font-size: 10pt;
             line-height: 1.4;
-            color: #1f2937;
+            color: {{ $secondaryColor }};
         }
         .page {
             padding: 30px 40px;
@@ -40,7 +44,7 @@
         .company-name {
             font-size: 18pt;
             font-weight: bold;
-            color: #0891b2;
+            color: {{ $primaryColor }};
             margin-bottom: 5px;
         }
         .company-info {
@@ -50,7 +54,7 @@
         .quote-title {
             font-size: 24pt;
             font-weight: bold;
-            color: #1f2937;
+            color: {{ $secondaryColor }};
             margin-bottom: 10px;
         }
         .quote-number {
@@ -109,15 +113,16 @@
             display: table;
             width: 100%;
             margin-bottom: 30px;
-            background: #ecfeff;
+            background: #f8fafc;
             border-radius: 8px;
             padding: 15px;
+            border: 1px solid #e2e8f0;
         }
         .info-item {
             display: table-cell;
             text-align: center;
             padding: 0 10px;
-            border-right: 1px solid #a5f3fc;
+            border-right: 1px solid #e2e8f0;
         }
         .info-item:last-child {
             border-right: none;
@@ -131,7 +136,7 @@
         .info-value {
             font-size: 10pt;
             font-weight: bold;
-            color: #1f2937;
+            color: {{ $secondaryColor }};
         }
 
         /* Table */
@@ -141,7 +146,7 @@
             margin-bottom: 30px;
         }
         .items-table thead th {
-            background: #0891b2;
+            background: {{ $primaryColor }};
             color: white;
             padding: 10px 12px;
             text-align: left;
@@ -212,13 +217,13 @@
             font-weight: 500;
         }
         .totals-total {
-            background: #0891b2;
+            background: {{ $primaryColor }};
             color: white;
             border-radius: 8px;
             margin-top: 10px;
         }
         .totals-total .totals-label {
-            color: #d1d5db;
+            color: rgba(255,255,255,0.8);
             font-size: 11pt;
         }
         .totals-total .totals-value {

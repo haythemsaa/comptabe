@@ -68,7 +68,7 @@
                             @if($company->street || $company->city)
                                 {{ $company->street }}<br>
                                 {{ $company->postal_code }} {{ $company->city }}<br>
-                                {{ $company->country }}
+                                {{ $company->getCountryConfig()['name'] ?? $company->country_code ?? '-' }}
                             @else
                                 -
                             @endif
@@ -289,6 +289,32 @@
             <div class="bg-secondary-800 rounded-xl border border-secondary-700 p-6">
                 <h3 class="font-semibold mb-4 border-b border-secondary-700 pb-4">Actions</h3>
                 <div class="space-y-3">
+                    <a href="{{ route('admin.modules.assign-form', $company) }}" class="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 rounded-lg transition-colors flex items-center justify-center gap-2 block">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        Gérer les modules
+                    </a>
+
+                    @if(!$company->subscription)
+                        <a href="{{ route('admin.subscriptions.create', ['company' => $company->id]) }}" class="w-full px-4 py-2 bg-success-500 hover:bg-success-600 rounded-lg transition-colors flex items-center justify-center gap-2 block">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                            </svg>
+                            Créer un abonnement
+                        </a>
+                    @endif
+
+                    <form action="{{ route('admin.companies.impersonate', $company) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="w-full px-4 py-2 bg-warning-500 hover:bg-warning-600 rounded-lg transition-colors font-medium flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            Se connecter en tant que
+                        </button>
+                    </form>
+
                     @if($company->trashed())
                         <form action="{{ route('admin.companies.restore', $company) }}" method="POST">
                             @csrf

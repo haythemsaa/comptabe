@@ -4,7 +4,42 @@
 
 ---
 
-## ✅ TERMINÉ (98% Complete)
+## ✅ CRM Pipeline Module - IMPLÉMENTÉ
+
+### Fichiers créés:
+- **Migration**: `database/migrations/2026_01_02_190000_create_crm_tables.php`
+  - `opportunities` - Pipeline avec étapes (lead → qualified → proposal → negotiation → won/lost)
+  - `activities` - Activités polymorphiques (appels, emails, réunions, notes, tâches)
+  - `opportunity_stage_history` - Historique des changements d'étape
+
+- **Modèles**:
+  - `app/Models/Opportunity.php` - Opportunités commerciales avec stages, probabilités, montants
+  - `app/Models/Activity.php` - Activités CRM avec types, priorités, dates
+  - `app/Models/OpportunityStageHistory.php` - Audit trail des transitions
+
+- **Contrôleur**: `app/Http/Controllers/CrmController.php`
+  - `pipeline()` - Vue Kanban drag-and-drop
+  - `dashboard()` - Tableau de bord CRM avec stats
+  - CRUD complet opportunités
+  - `updateStage()` - API AJAX pour drag-drop
+  - `markWon()` / `markLost()` - Actions de clôture
+  - CRUD activités
+
+- **Vues**:
+  - `resources/views/crm/pipeline.blade.php` - Kanban avec SortableJS
+  - `resources/views/crm/dashboard.blade.php` - Stats et activités
+  - `resources/views/crm/opportunities/index.blade.php` - Liste filtrée
+  - `resources/views/crm/opportunities/create.blade.php` - Formulaire création
+  - `resources/views/crm/opportunities/show.blade.php` - Détails + timeline activités
+  - `resources/views/crm/opportunities/edit.blade.php` - Formulaire édition
+  - `resources/views/crm/activities/index.blade.php` - Liste activités
+
+- **Routes**: 16 routes CRM sous `/crm/*` (middleware module:crm)
+- **Sidebar**: Section CRM conditionnelle si module activé
+
+---
+
+## ✅ Système de Modules - TERMINÉ (100% Complete)
 
 ### 1. Base de Données ✓
 - [x] Migration `2026_01_02_141632_create_modules_table.php`

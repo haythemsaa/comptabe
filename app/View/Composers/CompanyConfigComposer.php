@@ -15,6 +15,20 @@ class CompanyConfigComposer
         $company = Company::current();
 
         if (!$company) {
+            // Provide default values when no company is selected (e.g., superadmin without tenant)
+            $view->with([
+                'currentCompany' => null,
+                'companyCurrency' => 'EUR',
+                'companyCurrencySymbol' => '€',
+                'companyDecimalPlaces' => 2,
+                'companyVatRates' => [21, 12, 6, 0],
+                'companyDefaultVatRate' => 21,
+                'companySocialSecurityOrg' => 'ONSS',
+                'companyIsTunisia' => false,
+                'companyIsBelgium' => true,
+                'companyCountryCode' => 'BE',
+                'companyCountryName' => 'Belgique',
+            ]);
             return;
         }
 

@@ -19,6 +19,31 @@ class TenantMiddleware
             return redirect()->route('login');
         }
 
+        // Superadmins can bypass tenant requirement
+        if ($user->is_superadmin) {
+            // Try to set a tenant if available, but don't require it
+            $tenantId = session('current_tenant_id');
+            if (!$tenantId) {
+                $defaultCompany = $user->defaultCompany();
+                if ($defaultCompany) {
+                    session(['current_tenant_id' => $defaultCompany->id]);
+                    $tenantId = $defaultCompany->id;
+                }
+            }
+
+            // Share tenant info if available
+            if ($tenantId) {
+                $currentTenant = $user->companies()->find($tenantId);
+                view()->share('currentTenant', $currentTenant);
+                view()->share('userRole', $currentTenant ? $user->getRoleInCompany($tenantId) : 'superadmin');
+            } else {
+                view()->share('currentTenant', null);
+                view()->share('userRole', 'superadmin');
+            }
+
+            return $next($request);
+        }
+
         // Get current tenant from session
         $tenantId = session('current_tenant_id');
 

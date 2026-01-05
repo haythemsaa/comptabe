@@ -10,6 +10,7 @@ use App\Models\VatCode;
 use App\Models\ChartOfAccount;
 use App\Services\Peppol\PeppolService;
 use App\Services\EpcQrCodeService;
+use App\Services\InvoiceTemplateService;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -365,7 +366,11 @@ class InvoiceController extends Controller
             }
         }
 
-        $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'company', 'qrCode'));
+        // Get company's template configuration
+        $template = InvoiceTemplateService::getCompanyTemplate($company);
+        $templateColors = $template['colors'];
+
+        $pdf = Pdf::loadView($template['view'], compact('invoice', 'company', 'qrCode', 'templateColors'));
 
         return $pdf->download("Facture_{$invoice->invoice_number}.pdf");
     }

@@ -204,6 +204,61 @@ class ModulesSeeder extends Seeder
                 'monthly_price' => 19.99,
                 'sort_order' => 52,
             ],
+            [
+                'code' => 'assets',
+                'name' => 'Immobilisations',
+                'description' => 'Gestion des actifs, amortissements linéaires/dégressifs, tableau d\'amortissement',
+                'category' => 'finance',
+                'icon' => 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+                'is_core' => false,
+                'is_premium' => false,
+                'monthly_price' => 19.99,
+                'sort_order' => 53,
+                'routes' => ['assets.index'],
+                'dependencies' => ['accounting'],
+            ],
+            [
+                'code' => 'currencies',
+                'name' => 'Multi-Devises',
+                'description' => 'Facturation en devises étrangères, taux de change BCE, écarts de change',
+                'category' => 'finance',
+                'icon' => 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                'is_core' => false,
+                'is_premium' => false,
+                'monthly_price' => 14.99,
+                'sort_order' => 54,
+                'routes' => ['currencies.index'],
+                'dependencies' => ['invoices'],
+            ],
+
+            // ========== E-COMMERCE ==========
+            [
+                'code' => 'ecommerce',
+                'name' => 'E-commerce',
+                'description' => 'Intégration WooCommerce, Shopify, PrestaShop, import commandes, facturation auto',
+                'category' => 'sales',
+                'icon' => 'M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z',
+                'is_core' => false,
+                'is_premium' => true,
+                'monthly_price' => 39.99,
+                'sort_order' => 13,
+                'routes' => ['ecommerce.index'],
+                'dependencies' => ['invoices', 'partners'],
+            ],
+
+            // ========== FLEET MANAGEMENT ==========
+            [
+                'code' => 'fleet',
+                'name' => 'Gestion Flotte Véhicules',
+                'description' => 'Véhicules, ATN belge, leasing, dépenses carburant, entretien, réservations',
+                'category' => 'hr',
+                'icon' => 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4',
+                'is_core' => false,
+                'is_premium' => false,
+                'monthly_price' => 24.99,
+                'sort_order' => 33,
+                'routes' => ['fleet.index', 'fleet.atn-report'],
+            ],
 
             // ========== PREMIUM MODULES ==========
             [

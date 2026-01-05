@@ -6,7 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Company;
 use App\Models\Invoice;
+use App\Models\Module;
+use App\Models\SubscriptionPlan;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class AdminCompanyController extends Controller
 {
@@ -41,9 +46,156 @@ class AdminCompanyController extends Controller
         return view('admin.companies.index', compact('companies'));
     }
 
+    public function create()
+    {
+        $modules = Module::active()->orderBy('category')->orderBy('name')->get();
+        $plans = SubscriptionPlan::where('is_active', true)->orderBy('price_monthly')->get();
+        $countries = [
+            'BE' => 'Belgique',
+            'TN' => 'Tunisie',
+            'FR' => 'France',
+            'NL' => 'Pays-Bas',
+            'LU' => 'Luxembourg',
+            'DE' => 'Allemagne',
+        ];
+
+        return view('admin.companies.create', compact('modules', 'plans', 'countries'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'vat_number' => 'nullable|string|max:50',
+            'email' => 'required|email|max:255',
+            'phone' => 'nullable|string|max:50',
+            'website' => 'nullable|url|max:255',
+            'street' => 'nullable|string|max:255',
+            'postal_code' => 'nullable|string|max:20',
+            'city' => 'nullable|string|max:100',
+            'country_code' => 'required|string|max:2',
+            // Tunisia fields
+            'matricule_fiscal' => 'nullable|string|max:50',
+            'cnss_employer_number' => 'nullable|string|max:50',
+            // France fields
+            'siret' => 'nullable|string|max:14',
+            'siren' => 'nullable|string|max:9',
+            'ape_code' => 'nullable|string|max:6',
+            'urssaf_number' => 'nullable|string|max:20',
+            'convention_collective' => 'nullable|string|max:100',
+            // Owner user
+            'owner_email' => 'required|email|max:255',
+            'owner_first_name' => 'required|string|max:100',
+            'owner_last_name' => 'required|string|max:100',
+            'owner_password' => 'required|string|min:8',
+            // Modules
+            'modules' => 'nullable|array',
+            'modules.*' => 'exists:modules,id',
+            // Subscription
+            'subscription_plan_id' => 'nullable|exists:subscription_plans,id',
+            'trial_days' => 'nullable|integer|min:0|max:90',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Create company
+            $company = Company::create([
+                'name' => $validated['name'],
+                'vat_number' => $validated['vat_number'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'website' => $validated['website'] ?? null,
+                'street' => $validated['street'],
+                'postal_code' => $validated['postal_code'],
+                'city' => $validated['city'],
+                'country_code' => $validated['country_code'],
+                // Tunisia fields
+                'matricule_fiscal' => $validated['matricule_fiscal'] ?? null,
+                'cnss_employer_number' => $validated['cnss_employer_number'] ?? null,
+                // France fields
+                'siret' => $validated['siret'] ?? null,
+                'siren' => $validated['siren'] ?? null,
+                'ape_code' => $validated['ape_code'] ?? null,
+                'urssaf_number' => $validated['urssaf_number'] ?? null,
+                'convention_collective' => $validated['convention_collective'] ?? null,
+            ]);
+
+            // Create or find owner user
+            $user = User::where('email', $validated['owner_email'])->first();
+            if (!$user) {
+                $user = User::create([
+                    'first_name' => $validated['owner_first_name'],
+                    'last_name' => $validated['owner_last_name'],
+                    'email' => $validated['owner_email'],
+                    'password' => Hash::make($validated['owner_password']),
+                    'email_verified_at' => now(),
+                    'is_active' => true,
+                ]);
+            }
+
+            // Attach user as owner
+            $company->users()->attach($user->id, [
+                'role' => 'owner',
+                'is_default' => true,
+            ]);
+
+            // Assign modules
+            if (!empty($validated['modules'])) {
+                foreach ($validated['modules'] as $moduleId) {
+                    $company->modules()->attach($moduleId, [
+                        'status' => 'active',
+                        'activated_at' => now(),
+                        'activated_by' => auth()->id(),
+                    ]);
+                }
+            }
+
+            // Always assign core modules
+            $coreModules = Module::where('is_core', true)->pluck('id');
+            foreach ($coreModules as $moduleId) {
+                if (!$company->modules()->where('modules.id', $moduleId)->exists()) {
+                    $company->modules()->attach($moduleId, [
+                        'status' => 'active',
+                        'activated_at' => now(),
+                        'activated_by' => auth()->id(),
+                    ]);
+                }
+            }
+
+            // Create subscription if plan selected
+            if (!empty($validated['subscription_plan_id'])) {
+                $plan = SubscriptionPlan::find($validated['subscription_plan_id']);
+                $trialDays = $validated['trial_days'] ?? 14;
+
+                $company->subscriptions()->create([
+                    'subscription_plan_id' => $plan->id,
+                    'status' => $trialDays > 0 ? 'trialing' : 'active',
+                    'billing_cycle' => 'monthly',
+                    'amount' => $plan->price,
+                    'trial_ends_at' => $trialDays > 0 ? now()->addDays($trialDays) : null,
+                    'current_period_start' => now(),
+                    'current_period_end' => now()->addMonth(),
+                ]);
+            }
+
+            DB::commit();
+
+            AuditLog::log('create', "Entreprise {$company->name} créée par admin", $company);
+
+            return redirect()
+                ->route('admin.companies.show', $company)
+                ->with('success', 'Entreprise créée avec succès.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()->with('error', 'Erreur lors de la création: ' . $e->getMessage());
+        }
+    }
+
     public function show(Company $company)
     {
-        $company->load(['users.roles', 'subscription.plan', 'products']);
+        $company->load(['users', 'subscription.plan', 'products']);
 
         $recentActivity = AuditLog::where('company_id', $company->id)
             ->with('user')

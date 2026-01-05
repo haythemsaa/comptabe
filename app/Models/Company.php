@@ -65,6 +65,11 @@ class Company extends Model
         'vat_regime',
         'vat_periodicity',
         'logo_path',
+        // Invoice template settings
+        'invoice_template',
+        'invoice_primary_color',
+        'invoice_secondary_color',
+        'invoice_template_settings',
         'settings',
         // Firm management fields
         'company_type',
@@ -111,6 +116,8 @@ class Company extends Model
             // SECURITY: Encrypt sensitive banking data
             'default_iban' => 'encrypted',
             'default_bic' => 'encrypted',
+            // Invoice template settings
+            'invoice_template_settings' => 'array',
         ];
     }
 
@@ -433,7 +440,7 @@ class Company extends Model
      */
     public function clients(): HasMany
     {
-        return $this->partners()->where('is_customer', true);
+        return $this->partners()->where('type', 'customer');
     }
 
     /**
@@ -441,7 +448,7 @@ class Company extends Model
      */
     public function suppliers(): HasMany
     {
-        return $this->partners()->where('is_supplier', true);
+        return $this->partners()->where('type', 'supplier');
     }
 
     /**
